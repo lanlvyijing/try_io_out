@@ -22,7 +22,7 @@
 #include "vmthread.h"
 #include "ResID.h"
 
-#if defined(__HDK_LINKIT_ONE_V1__)
+#if defined(__HDK_LINKIT_ONE_V1__)        //用于区分硬件平台，掩盖IO引脚命名方式
     #define BLINK_PIN   VM_PIN_D0
 #elif defined(__HDK_LINKIT_ASSIST_2502__)
     #define BLINK_PIN   VM_PIN_P0
@@ -41,15 +41,15 @@ void vm_main(void)
 
 VMINT32 gpio_output_demo_blinking_thread(VM_THREAD_HANDLE thread_handle, void* user_data)
 {
-    VM_DCL_HANDLE gpio_handle = VM_DCL_HANDLE_INVALID;
+    VM_DCL_HANDLE gpio_handle = VM_DCL_HANDLE_INVALID;     //先设置为INVALID，开启IO成功后会改变
     VMINT i;
 
     vm_log_info("gpio_output_demo_blinking_thread - Start.");
 
     /* Opens GPIO pin BLINK_PIN */
-    gpio_handle = vm_dcl_open(VM_DCL_GPIO, BLINK_PIN);
+    gpio_handle = vm_dcl_open(VM_DCL_GPIO, BLINK_PIN);//从BLINK_PIN的宏定义得知为D0
 
-    if (gpio_handle != VM_DCL_HANDLE_INVALID)
+    if (gpio_handle != VM_DCL_HANDLE_INVALID)         //开启成功
     {
         /* Sets the pin mode to MODE_0 */
         vm_dcl_control(gpio_handle, VM_DCL_GPIO_COMMAND_SET_MODE_0, NULL);
@@ -59,7 +59,7 @@ VMINT32 gpio_output_demo_blinking_thread(VM_THREAD_HANDLE thread_handle, void* u
 
         for (i = 0; i < 120; i++)
         {
-            if (i % 2 == 0)
+            if (i % 2 == 0) //对计数值取余，来区分开启高低电平
             {
                 /* Sets BLINK_PIN to HIGH */
                 vm_dcl_control(gpio_handle, VM_DCL_GPIO_COMMAND_WRITE_HIGH, NULL);
@@ -69,7 +69,7 @@ VMINT32 gpio_output_demo_blinking_thread(VM_THREAD_HANDLE thread_handle, void* u
                 /* Sets BLINK_PIN to LOW */
                 vm_dcl_control(gpio_handle, VM_DCL_GPIO_COMMAND_WRITE_LOW, NULL);
             }
-            vm_thread_sleep(1000);
+            vm_thread_sleep(1000);//使线程休眠，时间必须短，否则引起消息队列堵塞
         }
 
         /* Closes GPIO pin BLINK_PIN */
@@ -87,7 +87,7 @@ void gpio_output_demo_handle_sysevt(VMINT message, VMINT param)
     case VM_EVENT_CREATE:
         vm_log_info("Sample of GPIO output - Start.");
         /* Creates a sub-thread for blinking the pin BLINK_PIN with the priority of 255. */
-        vm_thread_create(gpio_output_demo_blinking_thread, NULL, 255);
+        vm_thread_create(gpio_output_demo_blinking_thread, NULL, 255);//创建子线程
 
         break;
 
